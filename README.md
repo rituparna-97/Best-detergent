@@ -12,7 +12,7 @@ A consumer products company has conducted a marketing experiment before launchin
 9. Did you think the package was filled as per your expectation: (1:Poor, 3:Excellent)
 
 Each household answered the questions on a scale of 1-3, with 1 being worst and 3 being the best.
-Note that the first two questions represent the users’ overall evaluation of the product, whereas the other questions represent their views on specific aspects of the product. The response on the overall rating ofthe product (question no.2) is the one of primary interest to the management.
+Note that the first two questions represent the users’ overall evaluation of the product, whereas the other questions represent their views on specific aspects of the product. The response on the overall rating of the product (question no.2) is the one of primary interest to the management.
 
 The survey also collected covariate information that are given below:
 10. Do you place the product directly under a running stream of water? (Yes/No)
