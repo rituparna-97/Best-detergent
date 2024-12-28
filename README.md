@@ -15,6 +15,7 @@ Each household answered the questions on a scale of 1-3, with 1 being worst and 
 Note that the first two Columns C and D represent the users’ overall evaluation of the product, whereas the other questions represent their views on specific aspects of the product. The response on the overall rating of the product (Column D) is the one of primary interest to the management.
 
 The survey also collected covariate information that are given below:
+
 10. Column L: Do you place the product directly under a running stream of water? (Yes/No)
 11. Column M: How do you wash dishes (1= only by hand; 2=most of them by hand but some in machine; 3=some by hand but most of them in machine; 4= equally by hand and machine; 5=only in machine)
 12. Column N: Have you been using brand X of dishwashing detergent during the past six months (prior to this survey)? (Yes/No)
