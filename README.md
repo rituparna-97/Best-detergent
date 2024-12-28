@@ -12,4 +12,18 @@ A consumer products company has conducted a marketing experiment before launchin
 9. Did you think the package was filled as per your expectation: (1:Poor, 3:Excellent)
 
 Each household answered the questions on a scale of 1-3, with 1 being worst and 3 being the best.
-Note that the first two questions represent the users’ overall evaluation of the product, whereas the other questions represent their views on specific aspects of the product. The response on the overall rating ofthe product(question no.2) is the one of primary interest to the management.
+Note that the first two questions represent the users’ overall evaluation of the product, whereas the other questions represent their views on specific aspects of the product. The response on the overall rating ofthe product (question no.2) is the one of primary interest to the management.
+
+The survey also collected covariate information that are given below:
+10. Do you place the product directly under a running stream of water? (Yes/No)
+11. How do you wash dishes (1= only by hand; 2=most of them by hand but some in machine; 3=some by hand but most of them in machine; 4= equally by hand and machine; 5=only in machine)
+12. Have you been using brand X of dishwashing detergent during the past six months (prior to this survey)? (Yes/No)
+13. Household income (nominal variable with 11 levels)
+14. Age of the person primarily responsible for washing dishes in the house (nominal variable with 6 levels, each level measuring an interval, e.g. 15-24.)
+15. Number of hand washes per week (discrete variable)
+16. Hispanic? (Yes/No)
+
+The questions of interest here are:
+1. Is it possible to predict the overall performance measures (question 1 and 2) from the remaining performance measures (question 3-9)? That is, do the ratings on specific features like performance, perfume, color, packaging, effect on hand, ease of dispensing, extent to which the package is filled, affect the overall performance measures? If so, fit appropriate models (individual model for each overall performance measure) for each product, and compare them.
+2. How well can you predict the overall performance measures for each product from the covariates? Fit appropriate statistical models (individual model for each overall performance measure) and compare them for the two products.
+3. Does it appear that the two test products differ significantly with respect to the response of primary interest (overall rating)? If they do, which is better?
