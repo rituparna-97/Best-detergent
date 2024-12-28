@@ -1,3 +1,10 @@
+/* There are many missing observations in the dataset, both with respect to outcomes and covariates.
+A SAS program to give a quick visualization of the missing values by questions and create a
+barplot to see whether there are specific questions that have lower response rates.
+
+This program shows how to count the number of missing observations for numeric type and character
+type entries and merging them to a single SAS table for the barplot.
+*/
 /* Import the excel datafile*/
 option validvarname=v7;
 
@@ -8,11 +15,11 @@ run;
 /* Description of the columns*/
 proc contents data=work.market_survey_data;
 run;
+
 /* We see that columns N and R are character type and all other are numeric type */
-/* There are many missing observations in the data. Let's create a visualisation to see whether there are specific 
-questions that have low response rates. */
-/* Select columns excluding the first two(as they are refer to household no and product id) 
-Rename the column names as all are very long*/
+/* Select columns excluding the first two(as they are refer to household no and product id)
+It is also preferable to rename the column names as all are very long. I rename them as per our
+column description. We store the new table as Quesdata*/
 data work.Quesdata;
 	set work.market_survey_data(keep=value--hispanic);
 	rename value=C ratprod=D perform=E Overall_Perfume=F 
@@ -28,7 +35,7 @@ proc means data=work.Quesdata nmiss noprint;
 	output out=work.missing_numeric(drop=_TYPE_-- _FREQ_) nmiss= / autoname;
 run;
 
-/*count the number of missing values in the character columns*/
+/*Count the number of missing values in the character columns i.e., N and R*/
 proc sql;
 	create table work.missing_char as select nmiss(N) as N_Nmiss, nmiss(R) as 
 		R_Nmiss from work.Quesdata;
@@ -47,11 +54,7 @@ data work.missing_counts;
 	set work.transposed_numeric work.transposed_char;
 run;
 
-/*Create a bar chart for missing values*/
-ods graphics / reset=all imagefmt=jpg outputfmt=jpg 
-	imagepath='C:\your\desired\folder';
-
-/* Specify the folder where you want to save the image */
+/*Create a bar chart for all the missing values*/
 proc sgplot data=work.missing_counts;
 	vbar _NAME_ / response=COL1 fillattrs=(color=red);
 	xaxis label="Column ID";
@@ -59,6 +62,5 @@ proc sgplot data=work.missing_counts;
 	title "Count of Missing Observations";
 run;
 
-ods graphics close;
-
-/* Close the ODS graphics to finalize the image output */
+/* The barchart shows that among all the questions Question F: "Do you like the scent(perfume) of the product?"
+has the lowest response rate. Thereafter, Cols K,M,L,J,I,H have similar level of missingness in their responses. */
