@@ -53,7 +53,8 @@ barplot(count,main = "Count of Missing observations", xlab = "Column ID",
 
 
 We create a barplot of the count of missing observations by the different 
-questions and observe that among all the questions, Question F: "Do you like the scent(perfume) of the product?" has the lowest response rate. 
+questions and observe that among all the questions, Question F: "Do you like the 
+scent(perfume) of the product?" has the lowest response rate. 
 Thereafter, Cols K,M,L,J,I,H have similar level of missingness in their responses.
 
 # Data preprocessing
@@ -210,7 +211,8 @@ M_D11$max = pmax(M_D11[,1],M_D11[,2],M_D11[,3])
 head(M_D11)
 ```
 
-We encode the predicted probabilities as 1,2,3 depending on which column has the maximum probability as before.
+We encode the predicted probabilities as 1,2,3 depending on which column has the 
+maximum probability as before.
 
 ```{r}
 D_hat_D11 = rep(c(0,nrow(test_data1)))
@@ -277,9 +279,16 @@ p_C12
 
 # Fitting on TrainData2 with Ratrprod(D) as response
 
-Here I tried to fit the cumulative logit model, but the algorithm is asking for a proper starting value. From the data as well as from the previous predictions, we observed that the response of Col D is more or less always 3. This may be a factor why the algorithm , is asking for more data, as the D responses are not varying much as a factor variable should do taking distinct levels, instead its always taking up a constant.
+Here I tried to fit the cumulative logit model, but the algorithm is asking 
+for a proper starting value. From the data as well as from the previous 
+predictions, we observed that the response of Col D is more or less always 3. 
+This may be a factor why the algorithm , is asking for more data, as the D 
+responses are not varying much as a factor variable should do taking distinct 
+levels, instead its always taking up a constant.
 
-In view of this, we can conclude that whatever model we fit for D as the response using the $X_1$ variables as explanatory variables, a prediction of all 3's is always a good prediction.
+In view of this, we can conclude that whatever model we fit for D as the 
+response using the $X_1$ variables as explanatory variables, a prediction 
+of all 3's is always a good prediction.
 
 ```{r}
 D_hat_D12= rep(3,nrow(test_data2))
@@ -312,7 +321,8 @@ Hence when considering E to K, C is a more reliable measure of Detergent 2's per
 
 # Fitting on TrainData1 with Value(C) as response
 
-Before moving onto fitting models, we use the best subset selection approach to identify the most relevant covariates among L-R for fitting Proportional Odds 
+Before moving onto fitting models, we use the best subset selection approach 
+to identify the most relevant covariates among L-R for fitting Proportional Odds 
 Logistic Regression. We select the best model on the basis of AIC(lower the 
 better).
 
@@ -374,7 +384,8 @@ M_C21= as.data.frame(predict(fit_C21, test_data1, type="p"))
 M_C21$max = pmax(M_C21[,1],M_C21[,2],M_C21[,3])
 head(M_C21)
 ```
-We encode the predicted probabilities as 1,2,3 depending on which column has the maximum probability.
+We encode the predicted probabilities as 1,2,3 depending on which column
+has the maximum probability.
 
 ```{r}
 C_hat_C21 = rep(c(0,nrow(test_data1)))
@@ -396,7 +407,8 @@ p_C21
 
 # Fitting on TrainData1 with Ratprod(D) as response
 
-We use the best subset selection approach here also and select on the basis of AIC(smaller the better).
+We use the best subset selection approach here also and select on the
+basis of AIC(smaller the better).
 
 
 ```{recho=FALSE}
@@ -445,7 +457,8 @@ M_D21= as.data.frame(predict(fit_D21, test_data1, type="p"))
 M_D21$max = pmax(M_D21[,1],M_D21[,2],M_D21[,3])
 head(M_D21)
 ```
-We encode the predicted probabilities as 1,2,3 depending on which column has the maximum probability.
+We encode the predicted probabilities as 1,2,3 depending on which 
+column has the maximum probability.
 
 ```{r}
 D_hat_D21 = rep(c(0,nrow(test_data1)))
@@ -468,7 +481,8 @@ p_D21
 
 # Fitting on TrainData2 with Value(C) as response
 
-We use the best subset selection approach and select on the basis of AIC.
+We use the best subset selection approach and select on the basis 
+of AIC.
 
 ```{recho=FALSE}
 #One covariate 
@@ -517,7 +531,8 @@ M_C22$max = pmax(M_C22[,1],M_C22[,2],M_C22[,3])
 head(M_C22)
 ```
 
-We encode the predicted probabilities as 1,2,3 depending on which column has the maximum probability.
+We encode the predicted probabilities as 1,2,3 depending on which 
+column has the maximum probability.
 
 ```{r}
 C_hat_C22 = rep(c(0,nrow(test_data2)))
@@ -539,7 +554,8 @@ p_C22
 
 # Fitting on TrainData2 with Ratprod(D) as response
 
-We use the best subset selection approach here also and select on the basis of AIC(smaller the better).
+We use the best subset selection approach here also and select on 
+the basis of AIC(smaller the better).
 
 ```{recho=FALSE}
 #One covariate 
@@ -579,7 +595,8 @@ M_D22= as.data.frame(predict(fit_D22, test_data2, type="p"))
 M_D22$max = pmax(M_D22[,1],M_D22[,2],M_D22[,3])
 head(M_D22)
 ```
-We encode the predicted probabilities as 1,2,3 depending on which column has the maximum probability.
+We encode the predicted probabilities as 1,2,3 depending on which 
+column has the maximum probability.
 
 ```{r}
 D_hat_D22 = rep(c(0,nrow(test_data2)))
@@ -608,13 +625,19 @@ p_C22 #For Detergent2 ,proportion of correct preds of C when L to R are explanat
 p_D22 #For Detergent2 ,proportion of correct preds of D when L to R are explanatory
 ```
 
-For Detergent 1, we can say that on an average, our predictions for C are correct 30% of the times and that of D are correct 60% of the times when we predict based 
+For Detergent 1, we can say that on an average, our predictions for C 
+are correct 30% of the times and that of D are correct 60% of the 
+times when we predict based 
 on L to R.
-Hence when considering L to R, D is more reliable(almost double) measure of Detergent 1's performance.
+Hence when considering L to R, D is more reliable(almost double) 
+measure of Detergent 1's performance.
  
-For Detergent 2, we can say that on an average, our predictions for C are correct 40% of the times and that of D are correct 50% of the times when we predict based 
+For Detergent 2, we can say that on an average, our predictions for 
+C are correct 40% of the times and that of D are correct 50% of the 
+times when we predict based 
 on L to R.
-Hence when considering L to R, D is a more reliable measure of Detergent 2's performance.
+Hence when considering L to R, D is a more reliable measure of 
+Detergent 2's performance.
 
 # Difference in the two test products with respect to D
 
@@ -639,4 +662,7 @@ fit= polr(D~B, data = my_data, Hess = TRUE)
 summary(fit)
 ```
 
-From the p-value $\hat{\beta}$ is not significant, i.e., B and D are uncorrelated. So we can conclude that the two test products do not differ significantly wrt the D variable. This concludes that irrespective of people using either of the products majority of them rated D as "Excellent" . 
+From the p-value $\hat{\beta}$ is not significant, i.e., B and D are 
+uncorrelated. So we can conclude that the two test products do not 
+differ significantly wrt the D variable. This concludes that irrespective 
+of people using either of the products majority of them rated D as "Excellent" . 
