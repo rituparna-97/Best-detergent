@@ -8,11 +8,11 @@ run;
 /* Description of the columns*/
 proc contents data=work.market_survey_data;
 run;
-
-/* There are many missing observations in the data. Let's create a visualisation
-to see whether there are specific questions that have low response rates. */
-/* Select columns excluding the first two(as they are refer to household no and
-product id) Rename the column names as all are very long*/
+/* We see that columns N and R are character type and all other are numeric type */
+/* There are many missing observations in the data. Let's create a visualisation to see whether there are specific 
+questions that have low response rates. */
+/* Select columns excluding the first two(as they are refer to household no and product id) 
+Rename the column names as all are very long*/
 data work.Quesdata;
 	set work.market_survey_data(keep=value--hispanic);
 	rename value=C ratprod=D perform=E Overall_Perfume=F 
