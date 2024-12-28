@@ -1,4 +1,4 @@
-# Comparison of the overall performances of two dishwasgher detergents
+# Comparison of the overall performances of two dishwasher detergents
 A consumer products company has conducted a marketing experiment before launching a new dishwashing detergent. Two test detergents were randomly distributed to 549 households by mail. Each of them used their received products and returned a survey regarding the detergent's performance. The survey asked the following questions which can be called the response variables in the study:
 
 1. Does the product provide value for money? (1:Poor, 3:Excellent)
