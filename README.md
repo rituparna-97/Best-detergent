@@ -25,5 +25,5 @@ The survey also collected covariate information that are given below:
 
 The questions of interest here are:
 1. Is it possible to predict the overall performance measures (question 1 and 2) from the remaining performance measures (question 3-9)? That is, do the ratings on specific features like performance, perfume, color, packaging, effect on hand, ease of dispensing, extent to which the package is filled, affect the overall performance measures? If so, fit appropriate models (individual model for each overall performance measure) for each product, and compare them.
-2. How well can you predict the overall performance measures for each product from the covariates? Fit appropriate statistical models (individual model for each overall performance measure) and compare them for the two products.
+2. How well can you predict the overall performance measures for each product from the covariates(question 10-16)? Fit appropriate statistical models (individual model for each overall performance measure) and compare them for the two products.
 3. Does it appear that the two test products differ significantly with respect to the response of primary interest (overall rating)? If they do, which is better?
