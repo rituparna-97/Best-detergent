@@ -1,0 +1,642 @@
+---
+title: "Comparison of washing detergents"
+author: "Rituparna Dey"
+date: "2023-07-07"
+output: pdf_document
+extra_dependencies:
+- amsmath
+- amssymb
+- amsthm
+- stmaryrd
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("readxl")
+library("ggplot2")
+library("dplyr")
+library("MASS")
+library("splines")
+```
+
+# Original Dataset
+
+Lets first import the original dataset.
+
+
+```{r data original}
+#Importing the Data
+data = read_excel("/Users/rituparnadey/Downloads/market_survey_data_mod.xlsx")
+head(data)
+```
+
+
+# Visualization of the missing data
+
+First let rename the column names as per the problem description as some of them
+are very long. Additionally, there are many missing observations in the data, 
+both with respect to outcomes and covariates. Let's create a quick visualization 
+to see whether there are specific questions that have lower response rates.
+
+
+```{r data}
+#Data of questions dropping the household and product Id columns
+Qdata = data[,-1:-2]
+
+#Count the number of missing values by column
+#Rename the column names by column description
+Qcol=c("C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R")
+count = as.vector(sapply(Qdata, function(x) sum(is.na(x))))
+barplot(count,main = "Count of Missing observations", xlab = "Column ID",
+        names.arg = Qcol,col="red")
+```
+
+
+We create a barplot of the count of missing observations by the different 
+questions and observe that among all the questions, Question F: "Do you like the scent(perfume) of the product?" has the lowest response rate. 
+Thereafter, Cols K,M,L,J,I,H have similar level of missingness in their responses.
+
+# Data preprocessing
+
+Lets start by dropping the missing observations, and transforming the numeric 
+entries to factor (for product id column) and ordinal categories 
+(for other relevant response/covariate columns) for statistical analysis and 
+model fitting.
+
+
+```{r product id}
+colnames(data) = c("A","B",Qcol)
+data = na.omit(data)##remove the missing observations
+data$B = as.factor(data$B) # transforming to factor variable
+```
+
+
+```{r overall performance measures}
+# transforming to ordinal variable
+data$C = as.ordered(data$C)
+data$D = as.ordered(data$D)
+```
+
+
+```{r other performance measures}
+# transforming to ordinal variable
+data$E = as.ordered(data$E)
+data$F = as.ordered(data$F)
+data$G = as.ordered(data$G)
+data$H = as.ordered(data$H)
+data$I = as.ordered(data$I)
+data$J = as.ordered(data$J)
+data$K = as.ordered(data$K)
+```
+
+```{r covariate information}
+data$L = as.factor(data$L)
+data$M = as.factor(data$M)
+data$N = as.factor(data$N)
+data$O = as.factor(data$O)
+data$P = as.factor(data$P)
+data$Q = data$Q # age is numeric as before
+data$R = as.factor(data$R)
+```
+
+```{r}
+# verifying the data types
+str(data)
+```
+
+
+Now after our data preprocessing is complete, we separate the original dataset 
+into data1(for product 1) and data2 (for product 2)and again each of them into 
+training and test data for performance comparison.
+
+
+```{r data for Detergent 1 and 2}
+data1 = subset(data, B == 1)
+train_data1 = data1[1:147,]
+test_data1 = data1[148:222,]
+data2 = subset(data, B ==2)
+train_data2 = data2[1:162,]
+test_data2 =  data2[163:242,] 
+```
+
+# Fitting of Models: Predicting Columns C and D from the remaining performance measures of Columns E-K
+
+Here columns C, D have 3 categories and all the variables are ordinal. So we 
+fit a proportional odds model or cumulative logit model with $X_1 = (E,F,G,H,I,J,K)$
+as the vector of predictors and C/D as the response. We first fit the data on the
+training dataset and assess its performance on the test dataset.
+
+# Fitting on TrainData1 with Value(C) as response
+
+Define $X_1 = (E,F,G,H,I,J,K)$\
+For $j=1,2$ and any value of $X_1$, 
+$$\text{logit}[P(C\leq j|X_1)] = \alpha^{C11}_j +  X_1 \beta^{C11}$$
+$$\hat{\text{logit}}[P(C\leq 1|X_1)] = \hat{\theta}_{1}(X_1), 
+\hat{\text{logit}}[P(C\leq 2|X_1)] = \hat{\theta}_{2}(X_1)$$
+
+$$\hat{P}(C\leq 1|X_1)=\frac{exp(\hat{\theta_1})}{1+exp(\hat{\theta}_{1})},
+\hat{P}(C\leq 2|X_1)=\frac{exp(\hat{\theta_2})}{1+exp(\hat{\theta}_{2})}$$
+$$\hat{P}(C= 1|X_1)=\frac{exp(\hat{\theta_1})}{1+exp(\hat\theta_1)}, 
+\hat{P}(C= 3|X_1)=1-\frac{exp(\hat{\theta_2})}{1+exp(\hat\theta_2)}$$
+
+```{r}
+fit_C11 = polr(C~E+F+G+H+I+J+K,data = train_data1,Hess = TRUE)
+summary(fit_C11)
+```
+
+Here E.L refers to the indicator variable when E=1 and E.Q refers to the 
+indicator variable when E=2 and similarly others. The estimated parameters are:
+$$\hat{\alpha}_1 = -0.3199, \hat{\alpha}_2 = 1.6298$$
+
+
+Lets calculate the predicted C outcomes on the test data1. 
+
+
+```{r}
+#predicted values for test data
+M_C11= as.data.frame(predict(fit_C11, test_data1, type="p"))
+M_C11$max = pmax(M_C11[,1],M_C11[,2],M_C11[,3])
+head(M_C11)
+```
+
+
+These are decimal values between 0 and 1, which we cannot compare with our true 
+outcomes values. We encode the predicted probabilities as 1,2,3 depending on 
+which column has the maximum probability.
+
+
+```{r}
+C_hat_C11 = rep(c(0,nrow(test_data1)))
+for (i in 1:nrow(test_data1)){
+  for (j in 1:3){
+    if (M_C11$max[i] == M_C11[i,j])
+      C_hat_C11[i] = j
+  }
+}
+C_hat_C11
+```
+
+# Proportion of Correct predictions
+
+For comparison, we calculate the proportion of correct predictions for the test 
+dataset and that comes to be 0.48.
+
+
+```{r proportion of correct predictions}
+p_C11 = sum(C_hat_C11 == test_data1$C)/nrow(test_data1)
+p_C11
+```
+
+
+# Fitting on TrainData1 with Ratprod(D) as response
+
+Similar to C, for $j=1,2$ and any value of $X_1$, 
+$$\text{logit}(P(D\leq j|X_1)) = \alpha^{D11}_j +  X_1 \beta^{D11}$$
+
+```{r}
+fit_D11 = polr(D~E+F+G+H+I+J+K ,data = train_data1,Hess = TRUE)
+summary(fit_D11)
+```
+
+
+Lets calculate the predicted D outcomes on the test data1. 
+
+
+
+```{r}
+#predicted values for test data
+M_D11= as.data.frame(predict(fit_D11, test_data1, type="p"))
+M_D11$max = pmax(M_D11[,1],M_D11[,2],M_D11[,3])
+head(M_D11)
+```
+
+We encode the predicted probabilities as 1,2,3 depending on which column has the maximum probability as before.
+
+```{r}
+D_hat_D11 = rep(c(0,nrow(test_data1)))
+for (i in 1:nrow(test_data1)){
+  for (j in 1:3){
+    if (M_D11$max[i] == M_D11[i,j])
+      D_hat_D11[i] = j
+  }
+}
+D_hat_D11
+```
+
+Here we can observe that most of the predicted values are 3. 
+
+# Proportion of Correct predictions
+
+```{r}
+p_D11 = sum(D_hat_D11 == test_data1$D)/nrow(test_data1)
+p_D11
+```
+
+# Fitting on TrainData2 with Value(C) as response
+
+Define $X_1 = (E,F,G,H,I,J,K)$\
+For $j=1,2$ and any value of $X_1$, 
+$$\text{logit}[P(C\leq j|X_1)] = \alpha^{C12}_j +  X_1 \beta^{C12}$$
+
+```{r}
+fit_C12 = polr(C~E+F+G+H+I+J+K,data = train_data2,Hess = TRUE)
+summary(fit_C12)
+```
+
+
+Lets calculate the predicted C outcomes on the test data2. 
+
+
+
+```{r}
+#predicted values
+M_C12= as.data.frame(predict(fit_C12, test_data2, type="p"))
+M_C12$max = pmax(M_C12[,1],M_C12[,2],M_C12[,3])
+head(M_C12)
+```
+We encode the predicted probabilities as 1,2,3 depending on which column has the 
+maximum probability.
+
+```{r}
+C_hat_C12 = rep(c(0,nrow(test_data2)))
+for (i in 1:nrow(test_data2)){
+  for (j in 1:3){
+    if (M_C12$max[i] == M_C12[i,j])
+      C_hat_C12[i] = j
+  }
+}
+C_hat_C12
+```
+
+# Proportion of Correct predictions
+
+```{r}
+p_C12 = sum(C_hat_C12 == test_data2$C)/nrow(test_data2)
+p_C12
+```
+
+# Fitting on TrainData2 with Ratrprod(D) as response
+
+Here I tried to fit the cumulative logit model, but the algorithm is asking for a proper starting value. From the data as well as from the previous predictions, we observed that the response of Col D is more or less always 3. This may be a factor why the algorithm , is asking for more data, as the D responses are not varying much as a factor variable should do taking distinct levels, instead its always taking up a constant.
+
+In view of this, we can conclude that whatever model we fit for D as the response using the $X_1$ variables as explanatory variables, a prediction of all 3's is always a good prediction.
+
+```{r}
+D_hat_D12= rep(3,nrow(test_data2))
+p_D12 = sum(D_hat_D12 == test_data2$D)/nrow(test_data2)
+p_D12
+```
+
+# Comparison of the two products in predicting C, D based on the other performance measures E-K
+
+```{r}
+p_C11 #For Detergent1 ,proportion of correct preds of C when E to K are explanatory 
+p_D11 #For Detergent1 ,proportion of correct preds of D when E to K are explanatory
+p_C12 #For Detergent2 ,proportion of correct preds of C when E to K are explanatory 
+p_D12 #For Detergent2 ,proportion of correct preds of D when E to K are explanatory
+
+```
+
+For Detergent 1, we can say that on an average, our predictions for C are 
+correct 50% of the times and that of D are correct 65% of the times when we 
+predict based on E to K.
+Hence when considering E to K, D is a more reliable measure of Detergent 1's performance.
+
+For Detergent 2, we can say that on an average, our predictions for C are 
+correct 60% of the times and that of D are correct 50% of the times when we 
+predict based on E to K.
+Hence when considering E to K, C is a more reliable measure of Detergent 2's performance.
+
+
+# Fitting of Models: Predicting Columns C and D from the covariate variables of Columns L-R
+
+# Fitting on TrainData1 with Value(C) as response
+
+Before moving onto fitting models, we use the best subset selection approach to identify the most relevant covariates among L-R for fitting Proportional Odds 
+Logistic Regression. We select the best model on the basis of AIC(lower the 
+better).
+
+
+```{recho=FALSE}
+#One covariate 
+summary(polr(C~L,data = train_data1,Hess = TRUE))
+summary(polr(C~M,data = train_data1,Hess = TRUE))
+summary(polr(C~N,data = train_data1,Hess = TRUE))
+summary(polr(C~O,data = train_data1,Hess = TRUE))
+summary(polr(C~P,data = train_data1,Hess = TRUE))
+summary(polr(C~Q,data = train_data1,Hess = TRUE))
+summary(polr(C~R,data = train_data1,Hess = TRUE))
+```
+
+```{recho=FALSE}
+#Two covariate
+summary(polr(C~P+L,data = train_data1,Hess = TRUE))
+summary(polr(C~P+M,data = train_data1,Hess = TRUE))
+summary(polr(C~P+N,data = train_data1,Hess = TRUE))
+summary(polr(C~P+O,data = train_data1,Hess = TRUE))
+summary(polr(C~P+Q,data = train_data1,Hess = TRUE))
+summary(polr(C~P+R,data = train_data1,Hess = TRUE))
+```
+
+```{recho=FALSE}
+#Three covariate
+summary(polr(C~P+M+L,data = train_data1,Hess = TRUE))
+summary(polr(C~P+M+N,data = train_data1,Hess = TRUE))
+summary(polr(C~P+M+O,data = train_data1,Hess = TRUE))
+summary(polr(C~P+M+Q,data = train_data1,Hess = TRUE))
+summary(polr(C~P+M+R,data = train_data1,Hess = TRUE))
+```
+
+```{recho=FALSE}
+#Four covariate
+summary(polr(C~P+M+R+L,data = train_data1,Hess = TRUE))
+summary(polr(C~P+M+R+N,data = train_data1,Hess = TRUE))
+summary(polr(C~P+M+R+O,data = train_data1,Hess = TRUE))
+summary(polr(C~P+M+R+Q,data = train_data1,Hess = TRUE))
+```
+
+Comparing this we get the best model with the covariates P,M,R.
+
+Define $X_2 = (L,M,N,O,P,Q,R)$ and similar to before we can define the model 
+with the subsets of covariates. 
+
+```{r}
+fit_C21 =polr(C~P+M+R,data = train_data1,Hess = TRUE)
+summary(fit_C21)
+```
+
+
+The predicted C values of the testdata1 are calculated. 
+
+```{r}
+#predicted values
+M_C21= as.data.frame(predict(fit_C21, test_data1, type="p"))
+M_C21$max = pmax(M_C21[,1],M_C21[,2],M_C21[,3])
+head(M_C21)
+```
+We encode the predicted probabilities as 1,2,3 depending on which column has the maximum probability.
+
+```{r}
+C_hat_C21 = rep(c(0,nrow(test_data1)))
+for (i in 1:nrow(test_data1)){
+  for (j in 1:3){
+    if (M_C21$max[i] == M_C21[i,j])
+      C_hat_C21[i] = j
+  }
+}
+C_hat_C21
+```
+
+# Proportion of Correct predictions
+
+```{r}
+p_C21 = sum(C_hat_C21 == test_data1$C)/nrow(test_data1)
+p_C21
+```
+
+# Fitting on TrainData1 with Ratprod(D) as response
+
+We use the best subset selection approach here also and select on the basis of AIC(smaller the better).
+
+
+```{recho=FALSE}
+#One covariate 
+summary(polr(D~L,data = train_data1,Hess = TRUE))
+summary(polr(D~M,data = train_data1,Hess = TRUE))
+summary(polr(D~N,data = train_data1,Hess = TRUE))
+summary(polr(D~O,data = train_data1,Hess = TRUE))
+summary(polr(D~P,data = train_data1,Hess = TRUE))
+summary(polr(D~Q,data = train_data1,Hess = TRUE))
+summary(polr(D~R,data = train_data1,Hess = TRUE))
+```
+
+```{recho=FALSE}
+#Two covariate
+summary(polr(D~Q+L,data = train_data1,Hess = TRUE))
+summary(polr(D~Q+M,data = train_data1,Hess = TRUE))
+summary(polr(D~Q+N,data = train_data1,Hess = TRUE))
+summary(polr(D~Q+O,data = train_data1,Hess = TRUE))
+summary(polr(D~Q+P,data = train_data1,Hess = TRUE))
+summary(polr(D~Q+R,data = train_data1,Hess = TRUE))
+```
+
+```{recho=FALSE}
+#Three covariate
+summary(polr(D~Q+M+L,data = train_data1,Hess = TRUE))
+summary(polr(D~Q+M+N,data = train_data1,Hess = TRUE))
+summary(polr(D~Q+M+O,data = train_data1,Hess = TRUE))
+summary(polr(D~Q+M+P,data = train_data1,Hess = TRUE))
+summary(polr(D~Q+M+R,data = train_data1,Hess = TRUE))
+```
+
+Comparing this we get the best model with the covariates Q,M.
+
+```{r}
+fit_D21 =polr(D~Q+M,data = train_data1,Hess = TRUE)
+summary(fit_D21)
+```
+
+The predicted D values on the test data1 are calculated.
+
+
+```{r}
+#predicted values
+M_D21= as.data.frame(predict(fit_D21, test_data1, type="p"))
+M_D21$max = pmax(M_D21[,1],M_D21[,2],M_D21[,3])
+head(M_D21)
+```
+We encode the predicted probabilities as 1,2,3 depending on which column has the maximum probability.
+
+```{r}
+D_hat_D21 = rep(c(0,nrow(test_data1)))
+for (i in 1:nrow(test_data1)){
+  for (j in 1:3){
+    if (M_D21$max[i] == M_D21[i,j])
+      D_hat_D21[i] = j
+  }
+}
+D_hat_D21
+```
+
+# Proportion of Correct predictions
+
+```{r}
+p_D21 = sum(D_hat_D21 == test_data1$D)/nrow(test_data1)
+p_D21
+```
+
+
+# Fitting on TrainData2 with Value(C) as response
+
+We use the best subset selection approach and select on the basis of AIC.
+
+```{recho=FALSE}
+#One covariate 
+summary(polr(C~L,data = train_data2,Hess = TRUE))
+summary(polr(C~M,data = train_data2,Hess = TRUE))
+summary(polr(C~N,data = train_data2,Hess = TRUE))
+summary(polr(C~O,data = train_data2,Hess = TRUE))
+summary(polr(C~P,data = train_data2,Hess = TRUE))
+summary(polr(C~Q,data = train_data2,Hess = TRUE))
+summary(polr(C~R,data = train_data2,Hess = TRUE))
+```
+
+```{recho=FALSE}
+#Two covariate
+summary(polr(C~R+L,data = train_data2,Hess = TRUE))
+summary(polr(C~R+M,data = train_data2,Hess = TRUE))
+summary(polr(C~R+N,data = train_data2,Hess = TRUE))
+summary(polr(C~R+O,data = train_data2,Hess = TRUE))
+summary(polr(C~R+P,data = train_data2,Hess = TRUE))
+summary(polr(C~R+Q,data = train_data2,Hess = TRUE))
+```
+
+```{recho=FALSE}
+#Three covariate
+summary(polr(C~R+N+L,data = train_data2,Hess = TRUE))
+summary(polr(C~R+N+M,data = train_data2,Hess = TRUE))
+summary(polr(C~R+N+O,data = train_data2,Hess = TRUE))
+summary(polr(C~R+N+P,data = train_data2,Hess = TRUE))
+summary(polr(C~R+N+Q,data = train_data2,Hess = TRUE))
+```
+
+Comparing this we get the best model with the covariates R,N.
+
+
+```{r}
+fit_C22 =polr(C~R+N,data = train_data2,Hess = TRUE)
+summary(fit_C22)
+```
+
+The predicted values of C from testdata 2 are:
+
+```{r}
+#predicted values
+M_C22= as.data.frame(predict(fit_C22, test_data2, type="p"))
+M_C22$max = pmax(M_C22[,1],M_C22[,2],M_C22[,3])
+head(M_C22)
+```
+
+We encode the predicted probabilities as 1,2,3 depending on which column has the maximum probability.
+
+```{r}
+C_hat_C22 = rep(c(0,nrow(test_data2)))
+for (i in 1:nrow(test_data2)){
+  for (j in 1:3){
+    if (M_C22$max[i] == M_C22[i,j])
+      C_hat_C22[i] = j
+  }
+}
+C_hat_C22
+```
+
+# Proportion of Correct predictions
+
+```{r}
+p_C22 = sum(C_hat_C22 == test_data2$C)/nrow(test_data2)
+p_C22
+```
+
+# Fitting on TrainData2 with Ratprod(D) as response
+
+We use the best subset selection approach here also and select on the basis of AIC(smaller the better).
+
+```{recho=FALSE}
+#One covariate 
+summary(polr(D~L,data = train_data2,Hess = TRUE))
+summary(polr(D~M,data = train_data2,Hess = TRUE))
+summary(polr(D~N,data = train_data2,Hess = TRUE))
+summary(polr(D~O,data = train_data2,Hess = TRUE))
+summary(polr(D~P,data = train_data2,Hess = TRUE))
+summary(polr(D~Q,data = train_data2,Hess = TRUE))
+summary(polr(D~R,data = train_data2,Hess = TRUE))
+```
+
+```{recho=FALSE}
+#Two covariate
+summary(polr(D~R+L,data = train_data2,Hess = TRUE))
+summary(polr(D~R+M,data = train_data2,Hess = TRUE))
+summary(polr(D~R+N,data = train_data2,Hess = TRUE))
+summary(polr(D~R+O,data = train_data2,Hess = TRUE))
+summary(polr(D~R+P,data = train_data2,Hess = TRUE))
+summary(polr(D~R+Q,data = train_data2,Hess = TRUE))
+```
+
+Comparing this we get the best model with the covariate R.
+
+```{r}
+fit_D22 =polr(D~R,data = train_data2,Hess = TRUE)
+summary(fit_D22)
+```
+
+
+The predicted values of D from testdata 2 are:
+
+
+```{r}
+#predicted values
+M_D22= as.data.frame(predict(fit_D22, test_data2, type="p"))
+M_D22$max = pmax(M_D22[,1],M_D22[,2],M_D22[,3])
+head(M_D22)
+```
+We encode the predicted probabilities as 1,2,3 depending on which column has the maximum probability.
+
+```{r}
+D_hat_D22 = rep(c(0,nrow(test_data2)))
+for (i in 1:nrow(test_data2)){
+  for (j in 1:3){
+    if (M_D22$max[i] == M_D22[i,j])
+      D_hat_D22[i] = j
+  }
+}
+D_hat_D22
+```
+
+# Proportion of Correct predictions
+
+```{r}
+p_D22 = sum(D_hat_D22 == test_data2$D)/nrow(test_data2)
+p_D22
+```
+
+# Comparison
+
+```{r}
+p_C21 #For Detergent1 ,proportion of correct preds of C when L to R are explanatory
+p_D21 #For Detergent1 ,proportion of correct preds of D when L to R are explanatory
+p_C22 #For Detergent2 ,proportion of correct preds of C when L to R are explanatory
+p_D22 #For Detergent2 ,proportion of correct preds of D when L to R are explanatory
+```
+
+For Detergent 1, we can say that on an average, our predictions for C are correct 30% of the times and that of D are correct 60% of the times when we predict based 
+on L to R.
+Hence when considering L to R, D is more reliable(almost double) measure of Detergent 1's performance.
+ 
+For Detergent 2, we can say that on an average, our predictions for C are correct 40% of the times and that of D are correct 50% of the times when we predict based 
+on L to R.
+Hence when considering L to R, D is a more reliable measure of Detergent 2's performance.
+
+# Difference in the two test products with respect to D
+
+We keep only column B (product id) and D for this part of analysis.
+
+```{r}
+# Consider only the relevant data
+my_data_1 = data.frame(data1$B,data1$D)
+colnames(my_data_1)=c("B","D")
+my_data_2 = data.frame(data2$B,data2$D)
+colnames(my_data_2)=c("B","D")
+my_data = rbind.data.frame(my_data_1, my_data_2)
+```
+
+We now fit a cumulative logit model with D as response and B as the covariate.
+
+For $j=1,2$ and any value of B, 
+$$\text{logit}(P(D\leq j|B)) = \alpha_j + B\beta$$
+
+```{r}
+fit= polr(D~B, data = my_data, Hess = TRUE)
+summary(fit)
+```
+
+From the p-value $\hat{\beta}$ is not significant, i.e., B and D are uncorrelated. So we can conclude that the two test products do not differ significantly wrt the D variable. This concludes that irrespective of people using either of the products majority of them rated D as "Excellent" . 
