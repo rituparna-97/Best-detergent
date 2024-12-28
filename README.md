@@ -16,10 +16,13 @@ Note that the first two Columns C and D represent the users’ overall evaluatio
 
 The survey also collected covariate information that are given below:
 10. Column L: Do you place the product directly under a running stream of water? (Yes/No)
-11. Column M: How do you wash dishes (1= only by hand; 2=most of them by hand but some in machine; 3=some by hand but most of them in machine; 4= equally by hand and machine; 5=only in machine)
-12. Column N: Have you been using brand X of dishwashing detergent during the past six months (prior to this survey)? (Yes/No)
+11. Column M: How do you wash dishes (1= only by hand; 2=most of them by hand but some in machine; 3=some by   
+    hand but most of them in machine; 4= equally by hand and machine; 5=only in machine)
+12. Column N: Have you been using brand X of dishwashing detergent during the past six months (prior to this 
+    survey)? (Yes/No)
 13. Column O: Household income (nominal variable with 11 levels)
-14. Column P: Age of the person primarily responsible for washing dishes in the house (nominal variable with 6 levels, each level measuring an interval, e.g. 15-24.)
+14. Column P: Age of the person primarily responsible for washing dishes in the house (nominal variable with 6 
+    levels, each level measuring an interval, e.g. 15-24.)
 15. Column Q: Number of hand washes per week (discrete variable)
 16. Column R: Hispanic? (Yes/No)
 
