@@ -28,3 +28,8 @@ The questions of interest here are:
 1. Is it possible to predict the overall performance measures (Columns C and D) from the remaining performance measures (Columns E-K)? That is, do the ratings on specific features like performance, perfume, color, packaging, effect on hand, ease of dispensing, extent to which the package is filled, affect the overall performance measures? If so, fit appropriate models (individual model for each overall performance measure) for each product, and compare them.
 2. How well can you predict the overall performance measures for each product from the covariates(Columns L-R)? Fit appropriate statistical models (individual model for each overall performance measure) and compare them for the two products.
 3. Does it appear that the two test products differ significantly with respect to the response of primary interest (overall rating)? If they do, which is better?
+
+# File Contents
+market_survey_data_mod.xlsx includes the raw data
+data_exploration.sas includes the missing data analysis and visualization of the data
+Detergent_data_analysis.Rmd includes the in-depth statistical analyses answering the questions of interest of the previous paragraph. 
