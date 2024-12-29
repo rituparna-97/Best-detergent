@@ -1,3 +1,8 @@
+#This is #
+
+
+
+
 ---
 title: "Comparison of washing detergents"
 author: "Rituparna Dey"
@@ -33,7 +38,7 @@ head(data)
 
 # Visualization of the missing data
 
-First let rename the column names as per the problem description as some of them
+First lets rename the column names as per the problem description as some of them
 are very long. Additionally, there are many missing observations in the data, 
 both with respect to outcomes and covariates. Let's create a quick visualization 
 to see whether there are specific questions that have lower response rates.
@@ -107,7 +112,7 @@ str(data)
 
 
 Now after our data preprocessing is complete, we separate the original dataset 
-into data1(for product 1) and data2 (for product 2)and again each of them into 
+into data1 (for product 1) and data2 (for product 2)and again each of them into 
 training and test data for performance comparison.
 
 
@@ -326,6 +331,8 @@ to identify the most relevant covariates among L-R for fitting Proportional Odds
 Logistic Regression. We select the best model on the basis of AIC(lower the 
 better).
 
+We use models with one covariate, two covariates, three and four, and choose the one 
+with the lowest AIC.
 
 ```{recho=FALSE}
 #One covariate 
@@ -371,6 +378,7 @@ Define $X_2 = (L,M,N,O,P,Q,R)$ and similar to before we can define the model
 with the subsets of covariates. 
 
 ```{r}
+# only considering P, M, R as it is our best model
 fit_C21 =polr(C~P+M+R,data = train_data1,Hess = TRUE)
 summary(fit_C21)
 ```
@@ -522,7 +530,7 @@ fit_C22 =polr(C~R+N,data = train_data2,Hess = TRUE)
 summary(fit_C22)
 ```
 
-The predicted values of C from testdata 2 are:
+The predicted values of C from testdata 2 are calculated.
 
 ```{r}
 #predicted values
@@ -586,7 +594,7 @@ summary(fit_D22)
 ```
 
 
-The predicted values of D from testdata 2 are:
+The predicted values of D from testdata 2 are calculated.
 
 
 ```{r}
@@ -616,7 +624,7 @@ p_D22 = sum(D_hat_D22 == test_data2$D)/nrow(test_data2)
 p_D22
 ```
 
-# Comparison
+# Comparison of the two products in predicting C, D based on the covariates L-R
 
 ```{r}
 p_C21 #For Detergent1 ,proportion of correct preds of C when L to R are explanatory
