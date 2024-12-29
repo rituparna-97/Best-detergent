@@ -30,6 +30,6 @@ The questions of interest here are:
 3. Does it appear that the two test products differ significantly with respect to the response of primary interest (overall rating)? If they do, which is better?
 
 # File Contents
-market_survey_data_mod.xlsx includes the raw data
-data_exploration.sas includes the missing data analysis and visualization of the data
-Detergent_data_analysis.Rmd includes the in-depth statistical analyses answering the questions of interest of the previous paragraph. 
+1. market_survey_data_mod.xlsx includes the raw data
+2. data_exploration.sas includes the missing data analysis and visualization of the data
+3. Detergent_data_analysis.Rmd includes the in-depth statistical analyses answering the questions of interest of the previous paragraph. 
